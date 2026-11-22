@@ -3,6 +3,7 @@ import type { Product } from '../../types/product';
 import { Star, Eye, Edit2, Trash2 } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { getCategoryVariant } from '../../utils/categoryUtils';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface ProductTableProps {
   products: Product[];
@@ -56,6 +57,7 @@ const TableRow: React.FC<{
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
 }> = ({ product, onView, onEdit, onDelete }) => {
+  const { canEditProduct, canDeleteProduct } = usePermissions();
   const [imgSrc, setImgSrc] = useState(product.thumbnail);
 
   return (
@@ -117,6 +119,7 @@ const TableRow: React.FC<{
       {/* Actions */}
       <td className="py-3.5 px-4 whitespace-nowrap text-right">
         <div className="flex items-center justify-end gap-1.5">
+          {/* View Details: all roles */}
           <button
             type="button"
             onClick={() => onView(product)}
@@ -126,24 +129,32 @@ const TableRow: React.FC<{
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            type="button"
-            onClick={() => onEdit(product)}
-            className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
-            title="Edit Product"
-            aria-label={`Edit ${product.title}`}
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(product)}
-            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-            title="Delete Product"
-            aria-label={`Delete ${product.title}`}
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+
+          {/* Edit Product: Admin & Manager only */}
+          {canEditProduct && (
+            <button
+              type="button"
+              onClick={() => onEdit(product)}
+              className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
+              title="Edit Product"
+              aria-label={`Edit ${product.title}`}
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Delete Product: Admin only */}
+          {canDeleteProduct && (
+            <button
+              type="button"
+              onClick={() => onDelete(product)}
+              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+              title="Delete Product"
+              aria-label={`Delete ${product.title}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </td>
     </tr>

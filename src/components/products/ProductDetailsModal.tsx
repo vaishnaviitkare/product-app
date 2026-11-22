@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { getCategoryVariant } from '../../utils/categoryUtils';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface ProductDetailsModalProps {
   isOpen: boolean;
@@ -25,6 +26,8 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { canEditProduct, canDeleteProduct } = usePermissions();
+
   if (!isOpen || !product) return null;
 
   return (
@@ -138,30 +141,37 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               </div>
             </div>
 
-            {/* Action buttons */}
+            {/* Action buttons with permission checks */}
             <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  onDelete(product);
-                  onClose();
-                }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Delete
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onEdit(product);
-                  onClose();
-                }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs transition-colors cursor-pointer"
-              >
-                <Edit2 className="w-3.5 h-3.5" />
-                Edit Product
-              </button>
+              {/* Delete button: Admin only */}
+              {canDeleteProduct && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDelete(product);
+                    onClose();
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete
+                </button>
+              )}
+
+              {/* Edit button: Admin & Manager only */}
+              {canEditProduct && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onEdit(product);
+                    onClose();
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  Edit Product
+                </button>
+              )}
             </div>
           </div>
         </div>

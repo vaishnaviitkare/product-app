@@ -35,7 +35,7 @@ export type SortOption =
 
 export type ViewMode = 'grid' | 'table';
 
-export type NavigationTab = 'dashboard' | 'products' | 'categories';
+export type NavigationTab = 'dashboard' | 'products' | 'categories' | 'team';
 
 export interface DashboardStats {
   totalProducts: number;

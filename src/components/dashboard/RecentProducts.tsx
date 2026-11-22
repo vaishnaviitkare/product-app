@@ -3,6 +3,7 @@ import type { Product } from '../../types/product';
 import { Star, Eye, Edit2, ArrowRight, Sparkles } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { getCategoryVariant } from '../../utils/categoryUtils';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface RecentProductsProps {
   products: Product[];
@@ -17,6 +18,7 @@ export const RecentProducts: React.FC<RecentProductsProps> = ({
   onEditProduct,
   onViewAll,
 }) => {
+  const { canEditProduct } = usePermissions();
   // Show top 5 products (sorted by rating and recency)
   const displayProducts = products.slice(0, 5);
 
@@ -93,15 +95,17 @@ export const RecentProducts: React.FC<RecentProductsProps> = ({
                   >
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => onEditProduct(product)}
-                    className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
-                    title="Edit product"
-                    aria-label={`Edit ${product.title}`}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
+                  {canEditProduct && (
+                    <button
+                      type="button"
+                      onClick={() => onEditProduct(product)}
+                      className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
+                      title="Edit product"
+                      aria-label={`Edit ${product.title}`}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

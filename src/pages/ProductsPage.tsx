@@ -5,7 +5,9 @@ import { ProductCard } from '../components/products/ProductCard';
 import { ProductTable } from '../components/products/ProductTable';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { EmptyState } from '../components/common/EmptyState';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { RoleSelector } from '../components/layout/RoleSelector';
+import { usePermissions } from '../hooks/usePermissions';
+import { ChevronLeft, ChevronRight, Plus, Eye, Info } from 'lucide-react';
 
 interface ProductsPageProps {
   products: Product[];
@@ -32,6 +34,7 @@ interface ProductsPageProps {
   onResetFilters: () => void;
   onRetry: () => void;
   onResetData: () => void;
+  onRoleNotice?: (msg: string) => void;
 }
 
 export const ProductsPage: React.FC<ProductsPageProps> = ({
@@ -59,10 +62,13 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({
   onResetFilters,
   onRetry,
   onResetData,
+  onRoleNotice,
 }) => {
+  const { canAddProduct, isViewer, roleDefinition } = usePermissions();
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Header section */}
+      {/* Header section with Role Selector and Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -73,15 +79,47 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onOpenAddModal}
-          className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          Add Product
-        </button>
+        {/* Top-Right Header Actions: Role Selector + Add Product */}
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          {/* Functional Role Selector button at the top-right of Products page */}
+          <RoleSelector
+            variant="prominent"
+            onRoleChangeNotice={onRoleNotice}
+          />
+
+          {/* Add Product Button (Protected: Hidden for Viewer) */}
+          {canAddProduct && (
+            <button
+              type="button"
+              onClick={onOpenAddModal}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              Add Product
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Viewer Read-Only Information Banner */}
+      {isViewer && (
+        <div className="bg-slate-100/90 border border-slate-200 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 text-xs text-slate-700">
+          <div className="flex items-center gap-2.5">
+            <span className="p-1.5 rounded-lg bg-white text-slate-500 shadow-2xs">
+              <Eye className="w-4 h-4" />
+            </span>
+            <span>
+              <strong>Read-Only Mode:</strong> You are currently viewing as{' '}
+              <span className="font-semibold">{roleDefinition.label}</span>. Search, filtering,
+              and product inspection are available, but adding, editing, and deleting items are
+              restricted.
+            </span>
+          </div>
+          <span className="hidden md:inline px-2 py-0.5 rounded-md bg-white text-slate-600 font-mono text-[11px] border border-slate-200">
+            Read-only
+          </span>
+        </div>
+      )}
 
       {/* Filter and search control bar */}
       <ProductFilters
@@ -117,8 +155,8 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({
           type="products"
           title="Inventory is Empty"
           description="You currently have 0 products in your inventory. Add your first custom product or restore default items."
-          actionText="Add First Product"
-          onAction={onOpenAddModal}
+          actionText={canAddProduct ? 'Add First Product' : undefined}
+          onAction={canAddProduct ? onOpenAddModal : undefined}
           secondaryActionText="Restore Default Catalogue"
           onSecondaryAction={onResetData}
         />
@@ -177,7 +215,6 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({
                 {/* Page numbers */}
                 <div className="hidden sm:flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    // Show first, last, current, and adjacent pages
                     if (
                       page === 1 ||
                       page === totalPages ||

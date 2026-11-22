@@ -8,6 +8,8 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import type { NavigationTab } from '../../types/product';
+import { RoleSelector } from './RoleSelector';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface NavbarProps {
   activeTab: NavigationTab;
@@ -18,6 +20,7 @@ interface NavbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   totalProducts: number;
+  onRoleNotice?: (msg: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -28,11 +31,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   searchTerm,
   onSearchChange,
   totalProducts,
+  onRoleNotice,
 }) => {
+  const { canAddProduct, roleDefinition, role } = usePermissions();
+
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
+        <div className="flex items-center justify-between h-16 gap-3 sm:gap-4">
           {/* Left section: Hamburger for mobile + Brand */}
           <div className="flex items-center gap-3">
             <button
@@ -55,8 +61,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="hidden sm:block">
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-slate-900 text-lg tracking-tight">ProductHub</span>
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200/60 rounded">
-                    Admin
+                  <span
+                    className={`px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border rounded ${
+                      role === 'admin'
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200/60'
+                        : role === 'manager'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+                        : 'bg-slate-100 text-slate-700 border-slate-200/60'
+                    }`}
+                  >
+                    {roleDefinition.label}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 font-medium">Inventory & Catalog Suite</p>
@@ -94,8 +108,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Right section: Actions & Status */}
-          <div className="flex items-center gap-2.5">
+          {/* Right section: Role Selector, Actions & Status */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Functional Role Selector dropdown */}
+            <RoleSelector
+              variant="navbar"
+              onRoleChangeNotice={onRoleNotice}
+            />
+
             {/* LocalStorage indicator */}
             <div
               className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 text-xs text-slate-600 bg-slate-100/80 border border-slate-200 rounded-lg"
@@ -117,16 +137,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               <RotateCcw className="w-4 h-4" />
             </button>
 
-            {/* Add product CTA button */}
-            <button
-              type="button"
-              onClick={onOpenAddModal}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 active:from-indigo-700 active:to-indigo-800 rounded-xl shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all duration-200 cursor-pointer"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span className="hidden sm:inline">Add Product</span>
-              <span className="sm:hidden">Add</span>
-            </button>
+            {/* Add product CTA button (Hidden for Viewer role) */}
+            {canAddProduct && (
+              <button
+                type="button"
+                onClick={onOpenAddModal}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 active:from-indigo-700 active:to-indigo-800 rounded-xl shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all duration-200 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span className="hidden sm:inline">Add Product</span>
+                <span className="sm:hidden">Add</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

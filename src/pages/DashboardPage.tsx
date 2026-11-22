@@ -14,6 +14,7 @@ import type { Product, DashboardStats } from '../types/product';
 import { StatCard } from '../components/dashboard/StatCard';
 import { CategoryDistribution } from '../components/dashboard/CategoryDistribution';
 import { RecentProducts } from '../components/dashboard/RecentProducts';
+import { usePermissions } from '../hooks/usePermissions';
 
 interface DashboardPageProps {
   stats: DashboardStats;
@@ -34,6 +35,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   onViewProduct,
   onEditProduct,
 }) => {
+  const { canAddProduct } = usePermissions();
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Welcome & Overview Header */}
@@ -65,14 +68,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             Browse Products
             <ArrowUpRight className="w-4 h-4" />
           </button>
-          <button
-            type="button"
-            onClick={onOpenAddModal}
-            className="px-5 py-2.5 text-sm font-semibold bg-white text-indigo-900 hover:bg-indigo-50 active:bg-indigo-100 rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-indigo-600 stroke-[2.5]" />
-            Add Product
-          </button>
+          {canAddProduct && (
+            <button
+              type="button"
+              onClick={onOpenAddModal}
+              className="px-5 py-2.5 text-sm font-semibold bg-white text-indigo-900 hover:bg-indigo-50 active:bg-indigo-100 rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-indigo-600 stroke-[2.5]" />
+              Add Product
+            </button>
+          )}
         </div>
       </div>
 

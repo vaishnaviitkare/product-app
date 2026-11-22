@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Package,
   Tags,
+  Users,
   Plus,
   RotateCcw,
   Database,
@@ -10,8 +11,12 @@ import {
   X,
   Layers,
   Sparkles,
+  ShieldCheck,
+  UserCog,
+  Eye,
 } from 'lucide-react';
 import type { NavigationTab } from '../../types/product';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface SidebarProps {
   activeTab: NavigationTab;
@@ -34,24 +39,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
   totalProducts,
   totalCategories,
 }) => {
+  const { canAddProduct, canAccessTeam, role, roleDefinition } = usePermissions();
+
   const navItems = [
     {
       id: 'dashboard' as NavigationTab,
       label: 'Dashboard',
       icon: LayoutDashboard,
       badge: null,
+      visible: true,
     },
     {
       id: 'products' as NavigationTab,
       label: 'Products',
       icon: Package,
       badge: totalProducts,
+      visible: true,
     },
     {
       id: 'categories' as NavigationTab,
       label: 'Categories',
       icon: Tags,
       badge: totalCategories,
+      visible: true,
+    },
+    {
+      id: 'team' as NavigationTab,
+      label: 'Team & Access',
+      icon: Users,
+      badge: 'Admin',
+      visible: canAccessTeam, // Hidden for Manager and Viewer
     },
   ];
 
@@ -59,6 +76,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setActiveTab(tab);
     onClose();
   };
+
+  const getRoleIcon = () => {
+    if (role === 'admin') return ShieldCheck;
+    if (role === 'manager') return UserCog;
+    return Eye;
+  };
+
+  const RoleIcon = getRoleIcon();
 
   return (
     <>
@@ -106,64 +131,101 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
 
-          {/* Quick Action Button */}
-          <div className="p-4">
-            <button
-              type="button"
-              onClick={() => {
-                onOpenAddModal();
-                onClose();
-              }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs transition-colors cursor-pointer"
+          {/* Quick Action Button (Hidden for Viewer role) */}
+          {canAddProduct && (
+            <div className="p-4">
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenAddModal();
+                  onClose();
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                New Product
+              </button>
+            </div>
+          )}
+
+          {/* Current Role Indicator Widget */}
+          <div className="px-4 pt-3 pb-1">
+            <div
+              className={`p-3 rounded-2xl border flex items-center gap-3 ${
+                role === 'admin'
+                  ? 'bg-indigo-50/70 border-indigo-200 text-indigo-900'
+                  : role === 'manager'
+                  ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
+                  : 'bg-slate-100/80 border-slate-200 text-slate-800'
+              }`}
             >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              New Product
-            </button>
+              <div
+                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
+                  role === 'admin'
+                    ? 'bg-indigo-100 border-indigo-300 text-indigo-700'
+                    : role === 'manager'
+                    ? 'bg-emerald-100 border-emerald-300 text-emerald-700'
+                    : 'bg-white border-slate-300 text-slate-600'
+                }`}
+              >
+                <RoleIcon className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">
+                  Active Demo Role
+                </span>
+                <span className="text-xs font-bold truncate block">
+                  {roleDefinition.label}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Navigation Links */}
-          <nav aria-label="Main navigation" className="px-3 space-y-1">
+          <nav aria-label="Main navigation" className="px-3 pt-3 space-y-1">
             <div className="px-3 pb-2 pt-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               Navigation
             </div>
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
+            {navItems
+              .filter((item) => item.visible)
+              .map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
 
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-indigo-50 text-indigo-700 font-semibold shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon
-                      className={`w-5 h-5 ${
-                        isActive ? 'text-indigo-600' : 'text-slate-400'
-                      }`}
-                    />
-                    <span>{item.label}</span>
-                  </div>
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleNavClick(item.id)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-indigo-50 text-indigo-700 font-semibold shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        className={`w-5 h-5 ${
+                          isActive ? 'text-indigo-600' : 'text-slate-400'
+                        }`}
+                      />
+                      <span>{item.label}</span>
+                    </div>
 
-                  {item.badge !== null && (
-                    <span
-                      className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-                        isActive
-                          ? 'bg-indigo-200/60 text-indigo-800'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                    {item.badge !== null && (
+                      <span
+                        className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                          isActive
+                            ? 'bg-indigo-200/60 text-indigo-800'
+                            : 'bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
           </nav>
 
           {/* Quick Insights card */}
@@ -174,7 +236,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 Live Catalog
               </div>
               <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                Manage products, track pricing distributions, and test instant validation.
+                Manage products, track pricing distributions, and test role-based access.
               </p>
               <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-200/60 font-medium">
                 <span>Active Products</span>
@@ -194,7 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
             </div>
             <p className="text-[11px] text-slate-500 leading-normal">
-              Frontend persistence active. Edits and new products persist in browser storage.
+              Frontend persistence & demo RBAC active. Role and products persist in browser.
             </p>
           </div>
 

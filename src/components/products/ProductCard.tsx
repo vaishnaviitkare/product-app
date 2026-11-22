@@ -3,6 +3,7 @@ import type { Product } from '../../types/product';
 import { Star, Eye, Edit2, Trash2 } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { getCategoryVariant } from '../../utils/categoryUtils';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +21,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { canEditProduct, canDeleteProduct } = usePermissions();
   const [imgSrc, setImgSrc] = useState(product.thumbnail);
   const [imgError, setImgError] = useState(false);
 
@@ -62,8 +64,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <span>{product.rating.toFixed(1)}</span>
         </div>
 
-        {/* Quick action hover overlay */}
+        {/* Quick action hover overlay with permission guards */}
         <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+          {/* View Details: always available */}
           <button
             type="button"
             onClick={() => onView(product)}
@@ -73,24 +76,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            type="button"
-            onClick={() => onEdit(product)}
-            className="p-2.5 bg-white/95 hover:bg-white text-slate-700 hover:text-amber-600 rounded-xl shadow-lg transition-transform hover:scale-110 cursor-pointer"
-            title="Edit Product"
-            aria-label={`Edit ${product.title}`}
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(product)}
-            className="p-2.5 bg-white/95 hover:bg-white text-slate-700 hover:text-rose-600 rounded-xl shadow-lg transition-transform hover:scale-110 cursor-pointer"
-            title="Delete Product"
-            aria-label={`Delete ${product.title}`}
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+
+          {/* Edit Product: hidden for Viewer */}
+          {canEditProduct && (
+            <button
+              type="button"
+              onClick={() => onEdit(product)}
+              className="p-2.5 bg-white/95 hover:bg-white text-slate-700 hover:text-amber-600 rounded-xl shadow-lg transition-transform hover:scale-110 cursor-pointer"
+              title="Edit Product"
+              aria-label={`Edit ${product.title}`}
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Delete Product: hidden for Manager and Viewer (Admin only) */}
+          {canDeleteProduct && (
+            <button
+              type="button"
+              onClick={() => onDelete(product)}
+              className="p-2.5 bg-white/95 hover:bg-white text-slate-700 hover:text-rose-600 rounded-xl shadow-lg transition-transform hover:scale-110 cursor-pointer"
+              title="Delete Product"
+              aria-label={`Delete ${product.title}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -126,24 +137,42 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
+            {/* View action button */}
             <button
               type="button"
-              onClick={() => onEdit(product)}
+              onClick={() => onView(product)}
               className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors cursor-pointer"
-              title="Edit"
-              aria-label={`Edit ${product.title}`}
+              title="View Details"
+              aria-label={`View ${product.title}`}
             >
-              <Edit2 className="w-4 h-4" />
+              <Eye className="w-4 h-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onDelete(product)}
-              className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
-              title="Delete"
-              aria-label={`Delete ${product.title}`}
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+
+            {/* Edit action button: Admin & Manager only */}
+            {canEditProduct && (
+              <button
+                type="button"
+                onClick={() => onEdit(product)}
+                className="p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-colors cursor-pointer"
+                title="Edit Product"
+                aria-label={`Edit ${product.title}`}
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Delete action button: Admin only */}
+            {canDeleteProduct && (
+              <button
+                type="button"
+                onClick={() => onDelete(product)}
+                className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                title="Delete Product"
+                aria-label={`Delete ${product.title}`}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
