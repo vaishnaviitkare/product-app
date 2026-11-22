@@ -7,7 +7,6 @@ import {
   ChevronDown,
   Check,
   Lock,
-  Sparkles,
 } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { ROLES } from '../../utils/rbacConfig';

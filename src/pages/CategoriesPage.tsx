@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Product, CategoryInfo } from '../types/product';
-import { ArrowRight, Package, DollarSign, Plus, FolderPlus, X, Lock, Check } from 'lucide-react';
+import { ArrowRight, Package, DollarSign, Plus, FolderPlus, X, Lock,} from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { getCategoryVariant } from '../utils/categoryUtils';
 import { usePermissions } from '../hooks/usePermissions';
@@ -20,7 +20,7 @@ export const CategoriesPage: React.FC<CategoriesPageProps> = ({
   onNavigateToProducts,
   onAddCategoryNotice,
 }) => {
-  const { canManageCategories, roleDefinition, isAdmin } = usePermissions();
+  const { canManageCategories } = usePermissions();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 

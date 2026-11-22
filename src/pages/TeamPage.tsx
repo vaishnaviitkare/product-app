@@ -7,10 +7,7 @@ import {
   Check,
   X as XIcon,
   Lock,
-  Plus,
   Mail,
-  ShieldAlert,
-  Sparkles,
 } from 'lucide-react';
 import { usePermissions } from '../hooks/usePermissions';
 import { AccessDenied } from '../components/common/AccessDenied';
@@ -120,7 +117,7 @@ interface TeamPageProps {
 }
 
 export const TeamPage: React.FC<TeamPageProps> = ({ onNavigateHome, onRoleNotice }) => {
-  const { canAccessTeam, role } = usePermissions();
+  const { canAccessTeam} = usePermissions();
   const [team, setTeam] = useState<TeamMember[]>(INITIAL_TEAM);
 
   // Guard: if not authorized, render AccessDenied view

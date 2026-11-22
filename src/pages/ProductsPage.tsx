@@ -7,7 +7,7 @@ import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { EmptyState } from '../components/common/EmptyState';
 import { RoleSelector } from '../components/layout/RoleSelector';
 import { usePermissions } from '../hooks/usePermissions';
-import { ChevronLeft, ChevronRight, Plus, Eye, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Eye} from 'lucide-react';
 
 interface ProductsPageProps {
   products: Product[];
